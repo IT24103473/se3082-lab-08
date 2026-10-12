@@ -1,0 +1,47 @@
+Exercise 3 - Monte Carlo Pi with MPI (10,000,000 points)
+========================================================
+
+Files
+  monte_pi.c  - the serial sample program from the lab sheet link. The Dartmouth page
+                is no longer online; the code was taken from the archived copy at
+                web.archive.org. Only "main(int argc, char* argv)" -> "int main(void)" and
+                "return 0;" were changed so that it compiles with a modern gcc.
+  pi_mpi.c    - the MPI version.
+
+Compile: mpicc -o pi_mpi Exercise03/pi_mpi.c -lm
+Run:     mpirun -np 4 ./pi_mpi            (output in output.txt)
+
+The method
+  Pick random points (x, y) in the unit square. The fraction that falls inside the
+  quarter circle x^2 + y^2 <= 1 is about pi/4, so  pi ~ 4 * inside / total.
+
+How it is parallelised
+  1. The 10,000,000 points are shared between the processes (the first NITER % size
+     ranks take one extra point, so the total is always exactly 10,000,000).
+  2. Each process seeds its OWN random sequence with srand(SEED + rank). If every
+     process used srand(SEED), they would all test exactly the same points, and using
+     more processes would not add any new information. With 1 process the seed is
+     SEED, the same as the serial program.
+  3. Each process counts its points inside the circle.
+  4. Ranks 1..size-1 send their count to rank 0 with MPI_Send (tag 0). Rank 0 receives
+     with MPI_Recv from each source in turn (1, 2, 3, ...), adds the counts, and
+     computes pi.
+
+Results (output.txt)
+  Program            Points inside   Estimate of pi   Error vs pi   Time
+  serial monte_pi    -               3.14129          -             -
+  MPI, 1 process     7853219         3.1412876        0.00030       0.252 s
+  MPI, 2 processes   7850418         3.1401672        0.00143       0.135 s
+  MPI, 4 processes   7853321         3.1413284        0.00026       0.089 s
+  MPI, 8 processes   7854539         3.1418156        0.00022       0.061 s
+
+  * The 1-process MPI result (3.1412876) matches the serial program (3.14129), which
+    shows the parallel program does the same calculation.
+  * With more processes the estimate changes slightly, because each process uses
+    different random points. For 10,000,000 points the expected random error
+    (standard error) is 4 * sqrt(p(1-p)/N) with p = pi/4, which is about 0.0005.
+    The 1, 4 and 8 process runs are within about 0.6 of that; the 2-process run is
+    off by 0.0014, about 2.7 standard errors. That is larger than usual but still
+    within what random sampling can produce, and every run is correct to 2 decimals.
+  * The receive order is always 1, 2, 3, ... because rank 0 asks for each source
+    in turn (compare with Exercise 6).

@@ -1,0 +1,40 @@
+$ echo 10000000 | ./monte_pi      (serial sample program)
+Enter the number of iterations used to estimate pi: # of trials= 10000000 , estimate of pi is 3.14129 
+
+
+$ mpirun --use-hwthread-cpus -np 1 ./pi_mpi
+Processes        = 1
+# of trials      = 10000000
+Points inside    = 7853219
+Estimate of pi   = 3.1412876000
+Error vs M_PI    = 0.0003050536
+Time             = 0.252242 sec
+Receive order    = (none, only one process)
+
+$ mpirun --use-hwthread-cpus -np 2 ./pi_mpi
+Processes        = 2
+# of trials      = 10000000
+Points inside    = 7850418
+Estimate of pi   = 3.1401672000
+Error vs M_PI    = 0.0014254536
+Time             = 0.135313 sec
+Receive order    = 1
+
+$ mpirun --use-hwthread-cpus -np 4 ./pi_mpi
+Processes        = 4
+# of trials      = 10000000
+Points inside    = 7853321
+Estimate of pi   = 3.1413284000
+Error vs M_PI    = 0.0002642536
+Time             = 0.088994 sec
+Receive order    = 1 2 3
+
+$ mpirun --use-hwthread-cpus -np 8 ./pi_mpi
+Processes        = 8
+# of trials      = 10000000
+Points inside    = 7854539
+Estimate of pi   = 3.1418156000
+Error vs M_PI    = 0.0002229464
+Time             = 0.061057 sec
+Receive order    = 1 2 3 4 5 6 7
+
