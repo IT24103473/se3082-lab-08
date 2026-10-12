@@ -1,0 +1,28 @@
+Exercise 0 - In-class activities (SE4060-MPI-Part1)
+==================================================
+
+Files (copied unchanged from https://github.com/SLIIT-FacultyOfComputing/SE4060-MPI-Part1)
+  HelloMPI.c     - every process prints its rank and machine name
+  messages1.cc   - rank 1 sends one int (30) to rank 3 with MPI_Ssend
+  messaage2.cc   - rank 1 sends an array of 10 ints (0, 10, ..., 90) to rank 3
+                   (the file name is spelled "messaage2" in the course repo)
+
+Compile and run (output in output.txt)
+  make job1 messages1 message2
+  mpirun -np 4 ./job1
+  mpirun -np 4 ./messages1
+  mpirun -np 4 ./message2
+
+The course files use <cstdio>, so they are C++ and are compiled with mpic++
+(the README uses mpiicpc, the Intel compiler, which does the same job).
+messages1 and messaage2 need at least 4 processes, because they use rank 3.
+
+What the output shows
+  HelloMPI     Rank 0 prints "Hello World!" and ranks 1-3 print "Just a normal process".
+               All four run on the same machine (Alen), because this is one laptop.
+  messages1    Rank 3 prints "the value of y is 30": the value of x on rank 1 arrived in y.
+  messaage2    Rank 3 prints 0 10 20 30 40 50 60 70 80 90, the array rank 1 filled.
+
+The lines come out in a different order from run to run, because the processes run at
+the same time and nothing controls which one prints first. Only the message itself is
+ordered: rank 3 cannot print y until it has received it.
