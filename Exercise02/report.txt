@@ -1,0 +1,40 @@
+Exercise 2 - Adding up 1 to 10,000,000 with MPI
+===============================================
+
+File: sum_mpi.c      Compile: mpicc -o sum_mpi Exercise02/sum_mpi.c
+                     Run:     mpirun -np 4 ./sum_mpi      (output in output.txt)
+
+How it is parallelised
+  1. The numbers 1..10,000,000 are split into one block per process.
+     Rank r adds the numbers from  r*base + min(r, extra) + 1  for  base (+1) numbers,
+     where base = N / size and extra = N % size. The first "extra" ranks take one more
+     number each, so the split is correct for ANY number of processes, not only for
+     numbers that divide 10,000,000 evenly.
+  2. Every process adds its own block. No array is needed, because the numbers are
+     simply the loop counter.
+  3. Ranks 1..size-1 send their partial sum to rank 0 with MPI_Send (tag 0).
+     Rank 0 receives them with MPI_Recv, naming each source in turn (1, 2, 3, ...),
+     and adds them to its own partial sum.
+  4. Rank 0 checks the total against the formula N(N+1)/2 = 50,000,005,000,000.
+
+  The sum does not fit in an int (max about 2.1 billion), so long long and
+  MPI_LONG_LONG are used everywhere.
+
+  The time is measured with MPI_Wtime on rank 0, after an MPI_Barrier so that every
+  process starts together, and stops when the last partial sum has arrived.
+
+Results (output.txt)
+  Processes   Total sum             Correct?   Time
+      1       50000005000000        YES        0.008196 s
+      2       50000005000000        YES        0.004031 s
+      4       50000005000000        YES        0.002219 s
+      8       50000005000000        YES        0.004180 s
+
+  Every run gives the right answer. The times above are single runs; Exercise 4 has
+  7 runs for each of 1-12 processes and the graphs.
+
+Note on compiler optimisation
+  The programs are compiled exactly as the lab does it (mpicc -o ... with no -O flag).
+  With -O2 the same program still gives the right answer and the loop still runs, just
+  faster (about 5.4 ms instead of 8.2 ms for 1 process in a quick test). All timings in
+  this lab use the unoptimised build, so they can be compared with each other.

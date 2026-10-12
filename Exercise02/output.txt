@@ -1,0 +1,43 @@
+$ mpirun --use-hwthread-cpus -np 1 ./sum_mpi
+Processes  = 1
+Total sum  = 50000005000000
+Expected   = 50000005000000
+Correct?   = YES
+Time       = 0.008196 sec
+  Rank 0: added 1 .. 10000000 (10000000 numbers) => local_sum = 50000005000000
+
+$ mpirun --use-hwthread-cpus -np 2 ./sum_mpi
+Processes  = 2
+Total sum  = 50000005000000
+Expected   = 50000005000000
+Correct?   = YES
+Time       = 0.004031 sec
+  Rank 0: added 1 .. 5000000 (5000000 numbers) => local_sum = 12500002500000
+  Rank 1: added 5000001 .. 10000000 (5000000 numbers) => local_sum = 37500002500000
+
+$ mpirun --use-hwthread-cpus -np 4 ./sum_mpi
+  Rank 3: added 7500001 .. 10000000 (2500000 numbers) => local_sum = 21875001250000
+Processes  = 4
+Total sum  = 50000005000000
+Expected   = 50000005000000
+Correct?   = YES
+Time       = 0.002219 sec
+  Rank 0: added 1 .. 2500000 (2500000 numbers) => local_sum = 3125001250000
+  Rank 1: added 2500001 .. 5000000 (2500000 numbers) => local_sum = 9375001250000
+  Rank 2: added 5000001 .. 7500000 (2500000 numbers) => local_sum = 15625001250000
+
+$ mpirun --use-hwthread-cpus -np 8 ./sum_mpi
+  Rank 1: added 1250001 .. 2500000 (1250000 numbers) => local_sum = 2343750625000
+  Rank 4: added 5000001 .. 6250000 (1250000 numbers) => local_sum = 7031250625000
+  Rank 5: added 6250001 .. 7500000 (1250000 numbers) => local_sum = 8593750625000
+  Rank 3: added 3750001 .. 5000000 (1250000 numbers) => local_sum = 5468750625000
+  Rank 7: added 8750001 .. 10000000 (1250000 numbers) => local_sum = 11718750625000
+  Rank 2: added 2500001 .. 3750000 (1250000 numbers) => local_sum = 3906250625000
+  Rank 6: added 7500001 .. 8750000 (1250000 numbers) => local_sum = 10156250625000
+Processes  = 8
+Total sum  = 50000005000000
+Expected   = 50000005000000
+Correct?   = YES
+Time       = 0.004180 sec
+  Rank 0: added 1 .. 1250000 (1250000 numbers) => local_sum = 781250625000
+
