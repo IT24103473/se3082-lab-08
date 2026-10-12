@@ -1,0 +1,7 @@
+$ timeout 10 mpirun --use-hwthread-cpus -np 4 ./messages_mismatch
+Just a normal process From rank 0 machine Alen
+computer 3: waiting for a message from computer 2
+SEnding message to computer 3 from computer 1
+Just a normal process From rank 2 machine Alen
+[program was still waiting after 11 s and was stopped by timeout]
+
