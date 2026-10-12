@@ -1,0 +1,36 @@
+$ mpirun --use-hwthread-cpus -np 1 ./pi_any_source
+Processes        = 1
+# of trials      = 10000000
+Points inside    = 7853219
+Estimate of pi   = 3.1412876000
+Error vs M_PI    = 0.0003050536
+Time             = 0.279176 sec
+Receive order    = (none, only one process)
+
+$ mpirun --use-hwthread-cpus -np 2 ./pi_any_source
+Processes        = 2
+# of trials      = 10000000
+Points inside    = 7850418
+Estimate of pi   = 3.1401672000
+Error vs M_PI    = 0.0014254536
+Time             = 0.144721 sec
+Receive order    = 1
+
+$ mpirun --use-hwthread-cpus -np 4 ./pi_any_source
+Processes        = 4
+# of trials      = 10000000
+Points inside    = 7853321
+Estimate of pi   = 3.1413284000
+Error vs M_PI    = 0.0002642536
+Time             = 0.090906 sec
+Receive order    = 2 3 1
+
+$ mpirun --use-hwthread-cpus -np 8 ./pi_any_source
+Processes        = 8
+# of trials      = 10000000
+Points inside    = 7854539
+Estimate of pi   = 3.1418156000
+Error vs M_PI    = 0.0002229464
+Time             = 0.058746 sec
+Receive order    = 3 4 2 1 6 5 7
+

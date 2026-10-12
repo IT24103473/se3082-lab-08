@@ -1,0 +1,36 @@
+Exercise 6 - Exercise 3 with receive from MPI_ANY_SOURCE
+========================================================
+
+File: pi_any_source.c   Run: mpirun -np 4 ./pi_any_source   (output in output.txt)
+
+The change (one line in rank 0's receive loop):
+
+    Exercise 3:  MPI_Recv(&part, 1, MPI_LONG_LONG, src,            0, MPI_COMM_WORLD, &status);
+    Exercise 6:  MPI_Recv(&part, 1, MPI_LONG_LONG, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+
+The sheet says "receiving Tag", but MPI_ANY_SOURCE is the wildcard for the SOURCE
+argument. (The wildcard for the tag is MPI_ANY_TAG.) So the source argument was
+changed, and the tag stays 0. Rank 0 finds out who sent each message from
+status.MPI_SOURCE.
+
+Comparison with Exercise 3 (output.txt here vs Exercise03/output.txt)
+  Processes   Exercise 3 pi   Exercise 6 pi   Ex 3 receive order   Ex 6 receive order
+      1       3.1412876       3.1412876       -                    -
+      2       3.1401672       3.1401672       1                    1
+      4       3.1413284       3.1413284       1 2 3                2 3 1
+      8       3.1418156       3.1418156       1 2 3 4 5 6 7        3 4 2 1 6 5 7
+
+  * The estimate of pi is EXACTLY the same. Each worker sends the same count as
+    before, and adding whole numbers gives the same total in any order.
+  * The order the results are received in is different. With a fixed source, rank 0
+    takes the results in rank order 1, 2, 3, ...; if rank 1 is slow, rank 0 waits for
+    it even when the others have already finished. With MPI_ANY_SOURCE, rank 0 takes
+    the results in the order the workers FINISH, and that order changes from run to
+    run (see Exercise07/comparison.csv: different orders in almost every run).
+  * The time is about the same. In the fair comparison (Exercise07/comparison.csv,
+    7 runs each, median), it was 0.106 s against 0.115 s at 4 processes and 0.073 s
+    against 0.074 s at 8 processes. The fastest-to-slowest ranges overlap, so this
+    is run-to-run noise. Each worker sends only ONE small message, so the order of
+    receiving makes no real difference to the time here.
+    MPI_ANY_SOURCE helps when rank 0 has real work to do with each result as it
+    arrives, or when the workers finish at very different times.
