@@ -1,0 +1,80 @@
+Exercise 4 - Time and Speedup vs Number of Processes
+====================================================
+
+The sheet says "for both Exercise 1 and Exercise 2", but Exercise 1 is the GitHub repo
+and has nothing to time. The two parallel programs are Exercise 2 (sum) and
+Exercise 3 (Monte Carlo Pi), so those two are measured here.
+
+Files
+  run_timings.sh       runs sum_mpi and pi_mpi with 1..12 processes, 7 runs each
+  timings.csv          every one of the 168 measured times
+  plot_timings.py      draws the graphs from timings.csv (needs matplotlib)
+  tables.md            the tables below, printed by plot_timings.py
+  sum_mpi_time.png     Exercise 2: Time vs number of processes
+  sum_mpi_speedup.png  Exercise 2: Speedup vs number of processes
+  pi_mpi_time.png      Exercise 3: Time vs number of processes
+  pi_mpi_speedup.png   Exercise 3: Speedup vs number of processes
+
+How it was measured
+  * Machine: laptop with an Intel Core i5-1235U (12 hardware threads), WSL Ubuntu
+    24.04, Open MPI 4.1.6, gcc 13.3. mpirun --use-hwthread-cpus lets MPI use all
+    12 threads.
+  * The time is MPI_Wtime on rank 0, from after an MPI_Barrier until the last result
+    has been received. Starting mpirun is not included.
+  * Each case was run 7 times. The graphs use the MEDIAN, and the shaded band on the
+    time graphs shows the fastest and slowest run.
+  * Speedup S(p) = T(1) / T(p).  Efficiency = S(p) / p.
+
+Exercise 2 - sum of 1 to 10,000,000
+  Processes  Median time (s)  Speedup  Efficiency
+      1         0.008705       1.00      100%
+      2         0.005018       1.73       87%
+      3         0.003477       2.50       83%
+      4         0.003202       2.72       68%
+      6         0.002058       4.23       70%
+      8         0.002478       3.51       44%
+     10         0.002242       3.88       39%
+     12         0.002064       4.22       35%
+
+Exercise 3 - Monte Carlo Pi, 10,000,000 points
+  Processes  Median time (s)  Speedup  Efficiency
+      1         0.257448       1.00      100%
+      2         0.134613       1.91       96%
+      3         0.117958       2.18       73%
+      4         0.101047       2.55       64%
+      6         0.075943       3.39       57%
+      8         0.062459       4.12       52%
+     10         0.056843       4.53       45%
+     12         0.057814       4.45       37%
+  (all 12 process counts are in tables.md)
+
+What the graphs show
+  1. Both programs get faster with more processes, but the speedup is far below the
+     ideal straight line, and it stops improving at about 4.5x after 8-10 processes.
+
+  2. Pi scales almost perfectly from 1 to 2 processes (1.91x), then much less well.
+     The main reason is the processor. The i5-1235U is a hybrid CPU: it has 2 fast
+     "performance" cores (each with 2 hardware threads) and 8 slower "efficiency"
+     cores. With 2 processes, both can run on the fast cores. With more processes,
+     some land on slower cores or share a core through hyper-threading. The work is
+     split into EQUAL parts, so rank 0 has to wait for the slowest process, and the
+     slow processes decide the total time.
+     A laptop also runs one core at a higher turbo clock than it can run all cores at
+     once, so each core gets a little slower as more of them are busy.
+
+  3. The sum (Exercise 2) is much noisier: look at the wide bands and the zig-zag
+     speedup line. The whole job takes only about 9 ms on one process, so with many
+     processes each one works for less than 1 ms. At that scale, fixed costs (the
+     barrier, sending the partial sums, the operating system scheduling the
+     processes) are a large part of the measured time, and small disturbances
+     change the result a lot. The peak at 6 processes (4.23x) and the dip at 7 are
+     noise, not a real effect.
+
+  4. The Pi program has much more work per process (about 250 ms in total), so the
+     fixed costs matter less and its curves are smoother. This is the general rule:
+     parallelism pays off when each process has a lot of work compared with the
+     cost of communicating.
+
+  5. Past 10 processes the time no longer improves (Pi: 0.057 s at 10 and 0.058 s at
+     12), because there are no more free cores to add, only hardware threads that
+     share a core with another process.
