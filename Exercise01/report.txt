@@ -1,0 +1,26 @@
+Exercise 1 - GitHub repository
+==============================
+
+This folder structure is the repository asked for in Exercise 1. Every exercise
+has its own folder with the source code, a report.txt and the real output of the run:
+
+  Exercise00/  in-class activities from SE4060-MPI-Part1 (HelloMPI, messages1, messaage2)
+  Exercise01/  this note
+  Exercise02/  sum of 1..10,000,000 with MPI
+  Exercise03/  Monte Carlo Pi with MPI (plus the serial sample program)
+  Exercise04/  timings, Time vs Processes and Speedup graphs
+  Exercise05/  mismatched source/destination, and messaage2 with MPI_Bsend
+  Exercise06/  Exercise 3 receiving from MPI_ANY_SOURCE
+  Exercise07/  Exercise 6 with MPI_Bsend
+  Makefile     builds every program (make)
+  run_all.sh   runs every program and saves the ExerciseXX/output.txt files
+
+Steps
+  1. Log in to GitHub (account IT24103473).
+  2. Create a repository for the lab under that account.
+  3. Commit each exercise and push:
+       git init
+       git add .
+       git commit -m "exercise 0X done"
+       git remote add origin git@github.com:IT24103473/<repository-name>.git
+       git push -u origin main
