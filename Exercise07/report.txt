@@ -1,0 +1,43 @@
+Exercise 7 - Exercise 6 with Buffered Send (MPI_Bsend)
+=====================================================
+
+File: pi_bsend.c   Run: mpirun -np 4 ./pi_bsend   (output in output.txt)
+
+The change: the workers send their count with MPI_Bsend instead of MPI_Send. Rank 0
+still receives from MPI_ANY_SOURCE, as in Exercise 6.
+
+    int packed, bufsize;
+    MPI_Pack_size(1, MPI_LONG_LONG, MPI_COMM_WORLD, &packed);
+    bufsize = packed + MPI_BSEND_OVERHEAD;
+    char *buffer = malloc(bufsize);
+    MPI_Buffer_attach(buffer, bufsize);
+    MPI_Bsend(&my_count, 1, MPI_LONG_LONG, 0, 0, MPI_COMM_WORLD);
+    MPI_Buffer_detach(&buffer, &bufsize);   // waits until the buffered message is delivered
+    free(buffer);
+
+Comparison (compare_3_6_7.sh -> comparison.csv; 7 runs of each program, run in turn
+so that all three were measured under the same conditions)
+
+  Processes  Program                      pi            Median time   Fastest - slowest
+      4      Ex 3  MPI_Send, fixed source 3.1413284     0.1055 s      0.0914 - 0.1731 s
+      4      Ex 6  MPI_Send, ANY_SOURCE   3.1413284     0.1152 s      0.0984 - 0.1346 s
+      4      Ex 7  MPI_Bsend, ANY_SOURCE  3.1413284     0.1240 s      0.1044 - 0.1578 s
+      8      Ex 3  MPI_Send, fixed source 3.1418156     0.0733 s      0.0637 - 0.0787 s
+      8      Ex 6  MPI_Send, ANY_SOURCE   3.1418156     0.0743 s      0.0637 - 0.0911 s
+      8      Ex 7  MPI_Bsend, ANY_SOURCE  3.1418156     0.0810 s      0.0618 - 0.0874 s
+
+  * The result is identical in every one of the 42 runs: Bsend changes HOW the
+    message is sent, not what is sent.
+  * The receive order still changes from run to run, as in Exercise 6.
+  * The times are close and the ranges overlap, so there is no clear winner.
+    Bsend's median was a little slower in both cases, which fits the extra work it
+    does: allocating and attaching a buffer, copying the message into it, and
+    detaching it. But the difference is about the size of the run-to-run noise, so
+    these measurements cannot prove it.
+
+When Bsend is useful
+  MPI_Bsend returns as soon as the data has been copied, without waiting for the
+  receiver. That lets a process carry on working and can avoid deadlocks when two
+  processes send to each other at the same time. Here every worker sends one
+  8-byte message and then finishes, so there is nothing to gain. MPI_Send already
+  sends a message this small straight away.
